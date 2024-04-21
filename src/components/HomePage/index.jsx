@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import DataForm from "@/components/DataForm";
-import { BarLoader } from "react-spinners";
+import { RingLoader } from "react-spinners";
 import styled from "styled-components";
-import { FiEdit, FiTrash2, FiInfo } from "react-icons/fi"; // Importing icons
+import { FiEdit, FiTrash2, FiInfo } from "react-icons/fi";
 
 Modal.setAppElement("#modal-root");
 
@@ -17,6 +17,9 @@ const DataTable = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -32,7 +35,12 @@ const DataTable = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoginModalOpen(true); // Show login modal if no token found
+    } else {
+      fetchData(); // Fetch data if logged in
+    }
   }, []);
 
   const handleDelete = async (_id) => {
@@ -73,15 +81,39 @@ const DataTable = () => {
     setSelectedImageUrl("");
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    // Simplified login check for demonstration
+    if (
+      email === process.env.NEXT_APP_EMAIL &&
+      password === process.env.NEXT_APP_PASSWORD
+    ) {
+      localStorage.setItem("token", "fake_token"); // Set a fake token
+      setIsLoginModalOpen(false);
+      fetchData(); // Fetch data after login
+    } else {
+      alert("Invalid credentials");
+    }
+  };
+
   return (
     <Container>
-      <ActionButton style={{ marginTop: "50px", padding: "10px 20px" }} onClick={handleAddNew}>Add New Entry</ActionButton>
       {isLoading ? (
         <LoaderContainer>
-          <BarLoader color="#36d7b7" />
+          <RingLoader color="#000" size={100} />
         </LoaderContainer>
       ) : (
         <>
+          <ActionButton
+            style={{
+              marginTop: "50px",
+              padding: "10px 20px",
+              background: "#000",
+            }}
+            onClick={handleAddNew}
+          >
+            Add New Entry
+          </ActionButton>
           <StyledTableWrapper>
             <StyledTable>
               <thead>
@@ -167,11 +199,127 @@ const DataTable = () => {
           </Modal>
         </>
       )}
+      <Modal
+        isOpen={isLoginModalOpen}
+        contentLabel="Login"
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            marginRight: "-50%",
+            transform: "translate(-50%, -50%)",
+            width: "300px",
+          },
+        }}
+        ariaHideApp={false}
+        shouldCloseOnOverlayClick={false} // Prevents closing the modal by clicking outside it
+        onRequestClose={() => {}} // Overrides the default close behavior
+      >
+        {/* <LoginModalContent> */}
+          <StyledForm onSubmit={handleLogin}>
+            <h2>Admin Registration</h2>
+            <FormGroup>
+              <StyledInput
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </FormGroup>
+            <FormGroup>
+              <StyledInput
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </FormGroup>
+            <SubmitButton type="submit">Register</SubmitButton>
+          </StyledForm>
+        {/* </LoginModalContent> */}
+      </Modal>
     </Container>
   );
 };
 
 export default DataTable;
+
+// New styled component for the Login Modal
+const StyledForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+  margin: auto;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+
+const SubmitButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const StyledInput = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+
+  &:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
+`;
+
+const LoginModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  max-width: 400px;
+  margin: auto;
+`;
+
+const LoginInput = styled.input`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
+
+// const LoginButton = styled.button`
+//   padding: 10px 20px;
+//   background-color: #007bff;
+//   color: white;
+//   border: none;
+//   border-radius: 5px;
+//   cursor: pointer;
+// `;
 
 // Styled-components
 const Container = styled.div`
@@ -196,11 +344,10 @@ const modalStyles = {
 };
 
 const LoaderContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 200px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const StyledTableWrapper = styled.div`
