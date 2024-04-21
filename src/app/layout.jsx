@@ -14,6 +14,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${FontJakarta.variable} ${FontJakarta.className} bg-primary-bg !static`}
       >
+        <div id="app"></div>
         <div id="modal-root"></div>
         {children}
       </body>
