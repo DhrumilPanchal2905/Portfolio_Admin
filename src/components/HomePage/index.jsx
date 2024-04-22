@@ -114,7 +114,6 @@ const DataTable = () => {
           <>
             <ActionButton
               style={{
-                marginTop: "50px",
                 padding: "10px 20px",
                 background: "#000",
               }}
