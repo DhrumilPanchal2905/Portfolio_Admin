@@ -6,7 +6,7 @@ import Modal from "react-modal";
 import DataForm from "@/components/DataForm";
 import { RingLoader } from "react-spinners";
 import styled from "styled-components";
-import { FiEdit, FiTrash2, FiInfo } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 
 Modal.setAppElement("#modal-root");
 
@@ -97,127 +97,110 @@ const DataTable = () => {
   };
 
   return (
-    <Container>
-      {isLoading ? (
-        <LoaderContainer>
-          <RingLoader color="#000" size={100} />
-        </LoaderContainer>
-      ) : (
-        <>
-          <ActionButton
-            style={{
-              marginTop: "50px",
-              padding: "10px 20px",
-              background: "#000",
-            }}
-            onClick={handleAddNew}
-          >
-            Add New Entry
-          </ActionButton>
-          <StyledTableWrapper>
-            <StyledTable>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Image</th>
-                  <th>Description</th>
-                  <th>Data Image</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item) => (
-                  <tr key={item._id}>
-                    <td>{item.id}</td>
-                    <td>{item.title}</td>
-                    <td>
-                      <FiInfo
-                        onClick={() => openImageModal(item.img)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </td>
-                    <td>{item.desc}</td>
-                    <td>
-                      <FiInfo
-                        onClick={() => openImageModal(item.data_img)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </td>
-                    <td>
-                      <ButtonContainer>
-                        <ActionButton onClick={() => handleEdit(item)}>
-                          <FiEdit /> Edit
-                        </ActionButton>
-                        <ActionButton
-                          onClick={() => handleDelete(item._id)}
-                          danger
-                        >
-                          <FiTrash2 /> Delete
-                        </ActionButton>
-                      </ButtonContainer>
-                    </td>
+    <>
+      <Container>
+        {isLoading ? (
+          <LoaderContainer>
+            <RingLoader color="#000" size={100} />
+          </LoaderContainer>
+        ) : (
+          <>
+            <ActionButton
+              style={{
+                marginTop: "50px",
+                padding: "10px 20px",
+                background: "#000",
+              }}
+              onClick={handleAddNew}
+            >
+              Add New Entry
+            </ActionButton>
+            <StyledTableWrapper>
+              <StyledTable>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Data Image</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </StyledTable>
-          </StyledTableWrapper>
-          <Modal
-            isOpen={isModalOpen}
-            onRequestClose={closeModal}
-            contentLabel="Data Form"
-            style={{
-              content: {
-                top: "50%",
-                left: "50%",
-                right: "auto",
-                bottom: "auto",
-                marginRight: "-50%",
-                transform: "translate(-50%, -50%)",
-                width: "80%",
-                maxWidth: "600px",
-              },
-            }}
-          >
-            <DataForm
-              initialData={editingData}
-              onClose={closeModal}
-              refreshData={fetchData}
-            />
-          </Modal>
-          <Modal
-            isOpen={isImageModalOpen}
-            onRequestClose={closeImageModal}
-            contentLabel="Image Viewer"
-            style={modalStyles}
-          >
-            <img
-              src={selectedImageUrl}
-              alt="Modal Content"
-              style={{ width: "100%" }}
-            />
-          </Modal>
-        </>
-      )}
-      <Modal
-        isOpen={isLoginModalOpen}
-        contentLabel="Login"
-        style={{
-          content: {
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-            width: "300px",
-          },
-        }}
-        ariaHideApp={false}
-        shouldCloseOnOverlayClick={false} // Prevents closing the modal by clicking outside it
-        onRequestClose={() => {}} // Overrides the default close behavior
-      >
-        {/* <LoginModalContent> */}
+                </thead>
+                <tbody>
+                  {data.map((item) => (
+                    <tr key={item._id}>
+                      <td>{item.id}</td>
+                      <td>{item.title}</td>
+                      <td>
+                        <FiInfo
+                          onClick={() => openImageModal(item.img)}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </td>
+                      <td>{item.desc}</td>
+                      <td>
+                        <FiInfo
+                          onClick={() => openImageModal(item.data_img)}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </td>
+                      <td>
+                        <ButtonContainer>
+                          <ActionButton onClick={() => handleEdit(item)}>
+                            <FiEdit /> Edit
+                          </ActionButton>
+                          <ActionButton
+                            onClick={() => handleDelete(item._id)}
+                            danger
+                          >
+                            <FiTrash2 /> Delete
+                          </ActionButton>
+                        </ButtonContainer>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </StyledTable>
+            </StyledTableWrapper>
+            <Modal
+              className="z-20"
+              isOpen={isModalOpen}
+              onRequestClose={closeModal}
+              contentLabel="Data Form"
+              style={modalStyles}
+            >
+              {/* <CloseIcon onClick={closeModal} /> */}
+              <DataForm
+                initialData={editingData}
+                onClose={closeModal}
+                refreshData={fetchData}
+              />
+            </Modal>
+            <Modal
+              className="z-20"
+              isOpen={isImageModalOpen}
+              onRequestClose={closeImageModal}
+              contentLabel="Image Viewer"
+              style={modalStyles}
+            >
+              <img
+                src={selectedImageUrl}
+                alt="Modal Content"
+                style={{ width: "100%" }}
+              />
+            </Modal>
+          </>
+        )}
+        <Modal
+          isOpen={isLoginModalOpen}
+          contentLabel="Login"
+          style={modalStyles}
+          ariaHideApp={false}
+          shouldCloseOnOverlayClick={false} // Prevents closing the modal by clicking outside it
+          onRequestClose={() => {}} // Overrides the default close behavior
+        >
+          {/* <LoginModalContent> */}
           <StyledForm onSubmit={handleLogin}>
             <h2>Admin Registration</h2>
             <FormGroup>
@@ -240,21 +223,66 @@ const DataTable = () => {
             </FormGroup>
             <SubmitButton type="submit">Register</SubmitButton>
           </StyledForm>
-        {/* </LoginModalContent> */}
-      </Modal>
-    </Container>
+          {/* </LoginModalContent> */}
+        </Modal>
+      </Container>
+    </>
   );
 };
 
 export default DataTable;
 
 // New styled component for the Login Modal
+
+const modalStyles = {
+  content: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    borderRadius: "10px", // Round the corners of the modal
+    maxWidth: "600px", // Limit the maximum width for better appearance on large screens
+    width: "90%", // Use a percentage width for better responsivenes
+    zIndex: 1050, // Ensure it's on top of other items
+    display: "flex", // Use flex to help with the inner alignment
+    flexDirection: "column", // Stack content vertically
+    alignItems: "center", // Center align the items
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+    zIndex: 1040,
+  },
+};
+
+const CloseIcon = styled(FiX)`
+  cursor: pointer;
+  position: absolute;
+  top: 16px; // Adjust the position as needed
+  right: 16px; // Adjust the position as needed
+  font-size: 24px; // Adjust the size as needed
+  color: #fff; // Adjust the color as needed
+
+  &:hover {
+    color: red; // Adjust hover color as needed
+  }
+`;
+
 const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 500px;
-  margin: auto;
+  width: 90%; /* Adjust width to be auto for responsiveness */
+  max-width: 500px; /* Max width to ensure it doesn't stretch too far on larger screens */
+  height: auto; /* Height set to auto to adjust based on content */
+  max-height: 80vh; /* Max height to ensure form doesn't take up the entire screen height */
+  margin: 2vh auto; /* Center the form vertically and horizontally with margin */
+  background: #fff;
+  border-radius: 8px; /* Optional: rounded corners for aesthetic */
+  padding: 20px; /* Padding inside the form */
+  overflow-y: auto; /* Enable vertical scrolling for overflow content */
 `;
 
 const FormGroup = styled.div`
@@ -328,20 +356,22 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
+  background: rgba(0,0,0,0.1);
+  height: 100vh;
 `;
 
-const modalStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    width: "80%",
-    maxWidth: "600px",
-  },
-};
+// const modalStyles = {
+//   content: {
+//     top: "50%",
+//     left: "50%",
+//     right: "auto",
+//     bottom: "auto",
+//     marginRight: "-50%",
+//     transform: "translate(-50%, -50%)",
+//     width: "80%",
+//     maxWidth: "600px",
+//   },
+// };
 
 const LoaderContainer = styled.div`
   position: absolute;

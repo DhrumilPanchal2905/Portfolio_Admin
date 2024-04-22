@@ -1,5 +1,6 @@
 import { metaInfo } from "@/constants/pageMetaInfo";
 import HomePage from "@/components/HomePage";
+import { AuroraBackground } from "@/components/UI";
 
 export const metadata = {
   title: metaInfo.home.title,
@@ -26,7 +27,9 @@ export const metadata = {
 export default function Home() {
   return (
     <>
+    <AuroraBackground>
       <HomePage />
+    </AuroraBackground>
     </>
   );
 }

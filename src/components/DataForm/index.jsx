@@ -9,9 +9,18 @@ const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 500px;
-  margin: auto;
+  width: auto; /* Adjust width to be auto for responsiveness */
+  max-width: 500px; /* Max width to ensure it doesn't stretch too far on larger screens */
+  height: auto; /* Height set to auto to adjust based on content */
+  max-height: 80vh; /* Max height to ensure form doesn't take up the entire screen height */
+  margin: 2vh auto; /* Center the form vertically and horizontally with margin */
+  background: #fff;
+  border-radius: 8px; /* Optional: rounded corners for aesthetic */
+  padding: 20px; /* Padding inside the form */
+  overflow-y: auto; /* Enable vertical scrolling for overflow content */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: drop shadow for depth */
 `;
+
 
 const FormGroup = styled.div`
   display: flex;
@@ -109,7 +118,7 @@ const DataForm = ({ initialData = {}, onClose, refreshData }) => {
   };
 
   return (
-    <StyledForm onSubmit={handleSubmit}>
+    <StyledForm className="z-20" style={{ width: '-webkit-fill-available', padding: '20px' }} onSubmit={handleSubmit}>
       <FormGroup>
         <StyledLabel htmlFor="id">ID</StyledLabel>
         <StyledInput

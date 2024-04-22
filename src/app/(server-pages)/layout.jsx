@@ -7,9 +7,11 @@ import Footer from "@/components/Footer";
 export default function RootLayout({ children }) {
   return (
     <>
-      {/* <Header /> */}
-      {children}
-      {/* <Footer /> */}
+      {/* <AuroraBackground> */}
+        {/* <Header /> */}
+        {children}
+        {/* <Footer /> */}
+      {/* </AuroraBackground> */}
     </>
   );
 }
