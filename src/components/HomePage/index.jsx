@@ -16,6 +16,8 @@ const DataTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [selectedContent, setSelectedContent] = useState("");
+  const [modalContent, setModalContent] = useState({ type: "", content: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -71,14 +73,19 @@ const DataTable = () => {
     setEditingData(null);
   };
 
-  const openImageModal = (imageUrl) => {
-    setSelectedImageUrl(imageUrl);
-    setIsImageModalOpen(true);
-  };
-
   const closeImageModal = () => {
     setIsImageModalOpen(false);
     setSelectedImageUrl("");
+  };
+
+  const openImageModal = (imageUrl) => {
+    setModalContent({ type: "image", content: imageUrl });
+    setIsImageModalOpen(true);
+  };
+
+  const openContentModal = (content) => {
+    setModalContent({ type: "text", content: `<p>${content}</p>` });
+    setIsImageModalOpen(true);
   };
 
   const handleLogin = async (e) => {
@@ -138,8 +145,17 @@ const DataTable = () => {
                           style={{ cursor: "pointer" }}
                         />
                       </td>
-                      <td>{item.desc}</td>
                       <td>
+                        <FiInfo
+                          onClick={() =>
+                            openContentModal(`<p>${item.desc}</p>`)
+                          } // Wrapping `item.desc` in `<p>` for simplicity
+                          style={{ cursor: "pointer" }}
+                        />
+                      </td>
+
+                      {/* <td>{item.desc}</td> */}
+                      <td >
                         <FiInfo
                           onClick={() => openImageModal(item.data_img)}
                           style={{ cursor: "pointer" }}
@@ -178,17 +194,27 @@ const DataTable = () => {
               />
             </Modal>
             <Modal
-              className="z-20"
               isOpen={isImageModalOpen}
               onRequestClose={closeImageModal}
-              contentLabel="Image Viewer"
+              contentLabel="Content Viewer"
               style={modalStyles}
             >
-              <img
-                src={selectedImageUrl}
-                alt="Modal Content"
-                style={{ width: "100%" }}
-              />
+              {modalContent.type === "text" ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: modalContent.content }}
+                  style={{
+                    width: "100%",
+                    maxHeight: "80vh",
+                    overflowY: "auto",
+                  }}
+                ></div>
+              ) : modalContent.type === "image" ? (
+                <img
+                  src={modalContent.content}
+                  alt="Content"
+                  style={{ width: "100%", maxHeight: "80vh" }}
+                />
+              ) : null}
             </Modal>
           </>
         )}
@@ -356,7 +382,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   height: 100vh;
 `;
 
