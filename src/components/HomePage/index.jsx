@@ -1,49 +1,73 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import DataForm from "@/components/DataForm";
 import { RingLoader } from "react-spinners";
 import styled from "styled-components";
+import { AgGridReact } from "ag-grid-react";
+import {
+  // ClientSideRowModelModule,
+  // ModuleRegistry,
+  AllCommunityModule,
+  ModuleRegistry,
+} from "ag-grid-community";
+// import { MultiFilterModule } from "@ag-grid-community/multi-filter";
+// import { ModuleRegistry } from "@ag-grid-community/core"; // ✅ Correct import
+// import "ag-grid-community/styles/ag-grid.css";
+// import "ag-grid-community/styles/ag-theme-alpine.css";
 import { FiEdit, FiTrash2, FiInfo, FiX } from "react-icons/fi";
+import { Button } from "@mui/material";
 
-Modal.setAppElement("#modal-root");
+// Modal.setAppElement("#modal-root");
 
-const DataTable = () => {
-  const [data, setData] = useState([]);
+// ✅ Register AG Grid Modules
+// ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const DataTable = ({ data, fetchData, isLoading, setIsLoading }) => {
+  // const [data, setData] = useState([]);
   const [editingData, setEditingData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [selectedContent, setSelectedContent] = useState("");
   const [modalContent, setModalContent] = useState({ type: "", content: "" });
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const gridRef = useRef();
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const result = await axios.get(
-        `${process.env.NEXT_APP_BASE_URL}/api/data`
-      );
-      setData(result.data);
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    }
-    setIsLoading(false);
-  };
+  // const fetchData = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const result = await axios.get(
+  //       `${process.env.NEXT_APP_BASE_URL}/api/data`
+  //     );
+  //     console.log("result:", result);
+  //     setData(result.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data: ", error);
+  //   }
+  //   setIsLoading(false);
+  // };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setIsLoginModalOpen(true); // Show login modal if no token found
-    } else {
-      fetchData(); // Fetch data if logged in
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     setIsLoginModalOpen(true); // Show login modal if no token found
+  //   } else {
+  //     fetchData(); // Fetch data if logged in
+  //   }
+  // }, []);
 
   const handleDelete = async (_id) => {
     setIsLoading(true);
@@ -63,6 +87,84 @@ const DataTable = () => {
     setIsModalOpen(true);
   };
 
+  const [coldefs, setColDefs] = useState([
+    { headerName: "Sr.", field: "id", sortable: true, filter: true, width: 50 },
+    {
+      headerName: "Title",
+      field: "title",
+      sortable: true,
+      filter: "agTextColumnFilter",
+      width: 150,
+      cellStyle: { whiteSpace: "pre-wrap", lineHeight: "1.5" },
+    },
+    {
+      headerName: "Image",
+      field: "img",
+      width: 100,
+      cellRenderer: (params) => (
+        <Button
+          onClick={() => openImageModal(params.value)}
+          variant="destructive"
+        >
+          <FiInfo size={20} />
+        </Button>
+      ),
+    },
+    {
+      headerName: "Description",
+      field: "desc",
+      sortable: true,
+      filter: "agTextColumnFilter",
+      width: 550,
+      cellStyle: { whiteSpace: "pre-wrap", lineHeight: "1.5" }, // ✅ Multi-line text
+    },
+    {
+      headerName: "Data Image",
+      field: "data_img",
+      width: 150,
+      cellRenderer: (params) => (
+        <Button
+          onClick={() => openImageModal(params.value)}
+          variant="destructive"
+        >
+          <FiInfo size={20} />
+        </Button>
+      ),
+    },
+    {
+      headerName: "Actions",
+      field: "_id",
+      cellRenderer: (params) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Button onClick={() => handleEdit(params.data)} variant="outline">
+            <FiEdit size={20} color="#3498db" />
+          </Button>
+          <Button
+            onClick={() => handleDelete(params.value)}
+            variant="destructive"
+          >
+            <FiTrash2 size={20} color="red" />
+          </Button>
+        </div>
+      ),
+    },
+  ]);
+  //   ],
+  //   []
+  // );
+
+  // ✅ Default Column Definitions
+  const defaultColDef = useMemo(
+    () => ({
+      floatingFilter: true,
+      menuTabs: ["filterMenuTab"],
+      autoHeight: true, // ✅ Adjust height automatically
+    }),
+    []
+  );
+
+  // ✅ Increase Row Height
+  const getRowHeight = useCallback(() => 60, []);
   const handleAddNew = () => {
     setEditingData({});
     setIsModalOpen(true);
@@ -112,144 +214,72 @@ const DataTable = () => {
           </LoaderContainer>
         ) : (
           <>
-            <ActionButton
-              style={{
-                padding: "10px 20px",
-                background: "#000",
-              }}
-              onClick={handleAddNew}
-            >
-              Add New Entry
-            </ActionButton>
-            <StyledTableWrapper>
-              <StyledTable>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Image</th>
-                    <th>Description</th>
-                    <th>Data Image</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.id}</td>
-                      <td>{item.title}</td>
-                      <td>
-                        <FiInfo
-                          onClick={() => openImageModal(item.img)}
-                          style={{ cursor: "pointer" }}
-                        />
-                      </td>
-                      <td>
-                        <FiInfo
-                          onClick={() =>
-                            openContentModal(`<p>${item.desc}</p>`)
-                          } // Wrapping `item.desc` in `<p>` for simplicity
-                          style={{ cursor: "pointer" }}
-                        />
-                      </td>
-
-                      {/* <td>{item.desc}</td> */}
-                      <td >
-                        <FiInfo
-                          onClick={() => openImageModal(item.data_img)}
-                          style={{ cursor: "pointer" }}
-                        />
-                      </td>
-                      <td>
-                        <ButtonContainer>
-                          <ActionButton onClick={() => handleEdit(item)}>
-                            <FiEdit /> Edit
-                          </ActionButton>
-                          <ActionButton
-                            onClick={() => handleDelete(item._id)}
-                            danger
-                          >
-                            <FiTrash2 /> Delete
-                          </ActionButton>
-                        </ButtonContainer>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </StyledTable>
-            </StyledTableWrapper>
-            <Modal
-              className="z-20"
-              isOpen={isModalOpen}
-              onRequestClose={closeModal}
-              contentLabel="Data Form"
-              style={modalStyles}
-            >
-              {/* <CloseIcon onClick={closeModal} /> */}
-              <DataForm
-                initialData={editingData}
-                onClose={closeModal}
-                refreshData={fetchData}
-              />
-            </Modal>
-            <Modal
-              isOpen={isImageModalOpen}
-              onRequestClose={closeImageModal}
-              contentLabel="Content Viewer"
-              style={modalStyles}
-            >
-              {modalContent.type === "text" ? (
-                <div
-                  dangerouslySetInnerHTML={{ __html: modalContent.content }}
+            {data.length > 0 && (
+              <>
+                <ActionButton
                   style={{
-                    width: "100%",
-                    maxHeight: "80vh",
-                    overflowY: "auto",
+                    padding: "10px 20px",
+                    background: "#000",
                   }}
-                ></div>
-              ) : modalContent.type === "image" ? (
-                <img
-                  src={modalContent.content}
-                  alt="Content"
-                  style={{ width: "100%", maxHeight: "80vh" }}
-                />
-              ) : null}
-            </Modal>
+                  onClick={handleAddNew}
+                >
+                  Add New Entry
+                </ActionButton>
+                <div
+                  className="ag-theme-alpine"
+                  style={{ height: 500, width: "100%", padding: "10px" }}
+                >
+                  <AgGridReact
+                    ref={gridRef}
+                    rowData={data}
+                    columnDefs={coldefs}
+                    defaultColDef={defaultColDef}
+                    // pagination={true}
+                    getRowHeight={getRowHeight} // ✅ Increase row height
+                  />
+                </div>
+
+                <Modal
+                  className="z-20"
+                  isOpen={isModalOpen}
+                  onRequestClose={closeModal}
+                  contentLabel="Data Form"
+                  style={modalStyles}
+                >
+                  {/* <CloseIcon onClick={closeModal} /> */}
+                  <DataForm
+                    initialData={editingData}
+                    onClose={closeModal}
+                    refreshData={fetchData}
+                  />
+                </Modal>
+                <Modal
+                  isOpen={isImageModalOpen}
+                  onRequestClose={closeImageModal}
+                  contentLabel="Content Viewer"
+                  style={modalStyles}
+                >
+                  {modalContent.type === "text" ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: modalContent.content }}
+                      style={{
+                        width: "100%",
+                        maxHeight: "80vh",
+                        overflowY: "auto",
+                      }}
+                    ></div>
+                  ) : modalContent.type === "image" ? (
+                    <img
+                      src={modalContent.content}
+                      alt="Content"
+                      style={{ width: "100%", maxHeight: "80vh" }}
+                    />
+                  ) : null}
+                </Modal>
+              </>
+            )}
           </>
         )}
-        <Modal
-          isOpen={isLoginModalOpen}
-          contentLabel="Login"
-          style={modalStyles}
-          ariaHideApp={false}
-          shouldCloseOnOverlayClick={false} // Prevents closing the modal by clicking outside it
-          onRequestClose={() => {}} // Overrides the default close behavior
-        >
-          {/* <LoginModalContent> */}
-          <StyledForm onSubmit={handleLogin}>
-            <h2>Admin Registration</h2>
-            <FormGroup>
-              <StyledInput
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <StyledInput
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </FormGroup>
-            <SubmitButton type="submit">Register</SubmitButton>
-          </StyledForm>
-          {/* </LoginModalContent> */}
-        </Modal>
       </Container>
     </>
   );
@@ -281,19 +311,6 @@ const modalStyles = {
     zIndex: 1040,
   },
 };
-
-const CloseIcon = styled(FiX)`
-  cursor: pointer;
-  position: absolute;
-  top: 16px; // Adjust the position as needed
-  right: 16px; // Adjust the position as needed
-  font-size: 24px; // Adjust the size as needed
-  color: #fff; // Adjust the color as needed
-
-  &:hover {
-    color: red; // Adjust hover color as needed
-  }
-`;
 
 const StyledForm = styled.form`
   display: flex;
@@ -349,32 +366,6 @@ const StyledInput = styled.input`
   }
 `;
 
-const LoginModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  background: white;
-  max-width: 400px;
-  margin: auto;
-`;
-
-const LoginInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-`;
-
-// const LoginButton = styled.button`
-//   padding: 10px 20px;
-//   background-color: #007bff;
-//   color: white;
-//   border: none;
-//   border-radius: 5px;
-//   cursor: pointer;
-// `;
-
-// Styled-components
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -385,62 +376,11 @@ const Container = styled.div`
   height: 100vh;
 `;
 
-// const modalStyles = {
-//   content: {
-//     top: "50%",
-//     left: "50%",
-//     right: "auto",
-//     bottom: "auto",
-//     marginRight: "-50%",
-//     transform: "translate(-50%, -50%)",
-//     width: "80%",
-//     maxWidth: "600px",
-//   },
-// };
-
 const LoaderContainer = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-`;
-
-const StyledTableWrapper = styled.div`
-  overflow-y: auto;
-  max-height: 500px;
-  width: 100%;
-  max-width: 960px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  margin: 30px auto;
-`;
-
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-
-  td {
-    text-align: left;
-    padding: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-  }
-
-  th {
-    text-align: center;
-    padding: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-  }
-
-  tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 10px;
 `;
 
 const ActionButton = styled.button`
